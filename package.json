@@ -1,0 +1,16 @@
+{
+  "name": "kuechenzettel",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Küchenzettel — Rezept-Notizen (Tarn-Hülle über comm-core, Stufe A / Simulator).",
+  "scripts": {
+    "test": "node tools/drift-guard.mjs && node tests/comm-core.test.mjs",
+    "test:browser": "node tests/shell.smoke.mjs",
+    "drift": "node tools/drift-guard.mjs",
+    "icons": "node tools/gen-icons.mjs",
+    "serve": "python3 -m http.server 8000"
+  },
+  "devDependencies": { "playwright-core": "*" },
+  "//": "npm test laeuft ueberall mit reinem Node (Termux-tauglich). test:browser braucht playwright-core + das im Environment vorhandene Chromium."
+}

@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Küchenzettel — Rezept-Notizen</title>
+<meta name="theme-color" content="#0f766e">
+<meta name="description" content="Küchenzettel — deine Rezepte als schnelle Notizen. Aufschreiben, wiederfinden, kochen.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Küchenzettel">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icons/icon-192.png">
+<link rel="apple-touch-icon" href="./icons/icon-192.png">
+<style>
+  :root{
+    --bg:#eef1f4; --paper:#ffffff; --ink:#1f2933; --ink-2:#556070; --line:#dfe4ea;
+    --teal:#0f766e; --teal-d:#0b5a54; --teal-l:#e6f4f2; --amber:#d98a2b; --rule:#c9e3e0;
+    --r:14px; --r-s:9px; --shadow:0 1px 2px rgba(31,41,51,.06),0 8px 22px rgba(31,41,51,.08);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);
+    -webkit-tap-highlight-color:transparent;min-height:100vh}
+  .mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+  button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+  h1,h2,h3{font-weight:700;letter-spacing:-.01em}
+  .wrap{max-width:900px;margin:0 auto;padding:0 14px 120px}
+
+  header{position:sticky;top:0;z-index:20;background:var(--teal);color:#fff;box-shadow:var(--shadow)}
+  .hd{max-width:900px;margin:0 auto;display:flex;align-items:center;gap:10px;padding:14px 16px}
+  .hd .pin{font-size:22px;user-select:none;-webkit-user-select:none}
+  .hd h1{font-size:1.2rem;margin:0;letter-spacing:.5px}
+  .hd .tag{font-size:.68rem;opacity:.8;font-weight:500;letter-spacing:1.5px;margin-left:2px}
+  .hd .sp{flex:1}
+  .hd button{width:38px;height:38px;border-radius:9px;background:rgba(255,255,255,.15);display:grid;place-items:center;font-size:18px;transition:.15s}
+  .hd button:active{transform:scale(.9)}
+
+  /* quick bar (Notiz/Suche) — cover-Feature + stiller Ausloeser */
+  .quick{display:flex;gap:8px;margin:16px 0 4px}
+  .quick input{flex:1;padding:12px 14px;border-radius:10px;border:1px solid var(--line);background:var(--paper);
+    font-size:.98rem;color:var(--ink);box-shadow:var(--shadow)}
+  .quick input:focus{outline:2px solid #9ed6ce}
+  .quick .mic{width:46px;height:46px;border-radius:10px;background:var(--paper);border:1px solid var(--line);font-size:19px;
+    display:grid;place-items:center;box-shadow:var(--shadow)}
+  .quick .mic.live{background:var(--teal);color:#fff;animation:blink 1s infinite}
+  @keyframes blink{50%{opacity:.55}}
+  .note{margin:8px 0 4px;padding:10px 14px;border-left:3px solid var(--teal);background:var(--teal-l);border-radius:6px;
+    font-size:.9rem;color:var(--teal-d);display:none}
+  .note.show{display:block}
+
+  /* folder tabs */
+  .tabs{display:flex;gap:2px;overflow-x:auto;margin:14px 0 0;scrollbar-width:none;border-bottom:2px solid var(--teal)}
+  .tabs::-webkit-scrollbar{display:none}
+  .tab{white-space:nowrap;padding:9px 15px;font-size:.85rem;color:var(--ink-2);background:#e2e8ee;border-radius:9px 9px 0 0;
+    border:1px solid var(--line);border-bottom:none;position:relative;top:1px}
+  .tab.on{background:var(--paper);color:var(--teal-d);font-weight:600;border-color:var(--teal);border-bottom:2px solid var(--paper)}
+
+  /* index-card list */
+  .board{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;margin-top:16px}
+  .zettel{background:var(--paper);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden;cursor:pointer;
+    border-top:4px solid var(--amber);transition:transform .16s,box-shadow .16s;position:relative}
+  .zettel:hover{transform:translateY(-3px);box-shadow:0 10px 26px rgba(31,41,51,.14)}
+  .zettel:active{transform:scale(.99)}
+  .zettel .z-body{padding:14px 15px 15px;
+    background-image:repeating-linear-gradient(var(--paper) 0 27px, var(--rule) 27px 28px);background-position:0 42px}
+  .zettel .z-cat{font-size:.66rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--teal);font-weight:700}
+  .zettel h3{margin:2px 0 8px;font-size:1.08rem;line-height:1.3}
+  .zettel .z-meta{display:flex;gap:14px;font-size:.76rem;color:var(--ink-2);margin-top:6px}
+  .zettel .star{position:absolute;top:10px;right:12px;font-size:16px}
+  .empty{grid-column:1/-1;text-align:center;color:var(--ink-2);padding:44px 10px}
+
+  .fab{position:fixed;right:18px;bottom:22px;height:52px;padding:0 20px 0 16px;border-radius:26px;background:var(--teal);color:#fff;
+    font-weight:600;font-size:.95rem;display:flex;align-items:center;gap:8px;box-shadow:0 8px 22px rgba(15,118,110,.4);z-index:30}
+  .fab:active{transform:scale(.95)}
+  .fab .plus{font-size:22px}
+
+  /* sheet modal */
+  .ov{position:fixed;inset:0;background:rgba(20,30,35,.5);display:none;align-items:center;justify-content:center;z-index:50;padding:14px}
+  .ov.show{display:flex}
+  .sheet{background:var(--paper);width:100%;max-width:560px;max-height:90vh;overflow:auto;border-radius:16px;padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+  .sheet h2{margin:0 0 14px}
+  label.fld{display:block;margin:0 0 12px}
+  label.fld span{display:block;font-size:.78rem;color:var(--ink-2);margin-bottom:4px;font-weight:600}
+  .in{width:100%;padding:10px 12px;border-radius:9px;border:1px solid var(--line);background:#fafbfc;font-size:1rem;color:var(--ink);font-family:inherit}
+  textarea.in{min-height:84px;resize:vertical}
+  .btn{display:inline-flex;align-items:center;gap:7px;justify-content:center;padding:11px 16px;border-radius:9px;background:var(--teal);
+    color:#fff;font-weight:600;font-size:.95rem;transition:.12s}
+  .btn:active{transform:scale(.97)}
+  .btn.ghost{background:#eef2f5;color:var(--ink);border:1px solid var(--line)}
+  .btn.wide{width:100%}
+  .row{display:flex;gap:9px;flex-wrap:wrap}
+  .pill{display:inline-block;background:#eef2f5;color:var(--ink-2);padding:3px 10px;border-radius:6px;font-size:.76rem;margin:0 6px 6px 0}
+  .det h3{margin:16px 0 6px;color:var(--teal-d);border-bottom:1px solid var(--line);padding-bottom:4px}
+  .det ul,.det ol{margin:0;padding-left:20px;line-height:1.75}
+
+  /* hidden mode — "Stilles Fach", cool tone distinct from cover */
+  #priv{position:fixed;inset:0;z-index:80;background:#0f2b2a;color:#dfeceb;display:none;flex-direction:column}
+  #priv.show{display:flex}
+  .pv-top{display:flex;align-items:center;gap:10px;padding:15px 16px;background:#0b3d3a;box-shadow:0 2px 10px rgba(0,0,0,.3)}
+  .pv-top h2{margin:0;font-size:1.1rem;color:#e8f5f3}
+  .pv-top .sp{flex:1}
+  .pv-top button{width:36px;height:36px;border-radius:9px;background:rgba(255,255,255,.12);display:grid;place-items:center;font-size:17px;color:#fff}
+  .pv-body{flex:1;overflow:auto;padding:16px;max-width:620px;margin:0 auto;width:100%}
+  .pv-card{background:#123f3c;border:1px solid #1c524e;border-radius:12px;padding:15px;margin:0 0 13px}
+  .pv-card h3{margin:0 0 9px;font-size:.98rem;color:#9fe6dc}
+  .code{font-family:ui-monospace,monospace;font-size:.76rem;word-break:break-all;background:#0c2f2d;padding:10px;border-radius:8px;border:1px solid #1c524e;color:#c7e9e4}
+  .contact{display:flex;align-items:center;gap:10px;padding:10px;border-radius:9px;background:#0f3835;border:1px solid #1c524e;margin:0 0 8px;cursor:pointer}
+  .contact .av{width:36px;height:36px;border-radius:9px;background:var(--amber);color:#fff;display:grid;place-items:center;font-weight:700}
+  .contact .nm{font-weight:600;color:#eaf6f4}
+  .contact .sub{font-size:.72rem;color:#7fb8b1}
+  .thread{display:flex;flex-direction:column;gap:7px;margin:8px 0;max-height:44vh;overflow:auto;padding:2px}
+  .bub{max-width:80%;padding:8px 12px;border-radius:12px;font-size:.92rem;line-height:1.35;word-break:break-word}
+  .bub.in{align-self:flex-start;background:#0c2f2d;border:1px solid #1c524e}
+  .bub.out{align-self:flex-end;background:var(--teal);color:#fff}
+  .bub .t{display:block;font-size:.64rem;opacity:.65;margin-top:3px}
+  .sas{font-family:ui-monospace,monospace;font-size:1.05rem;letter-spacing:1px;color:#8fe0d4;text-align:center;padding:8px}
+  .muted{color:#8fb8b2;font-size:.84rem}
+  .banner{background:#0c2f2d;border:1px solid #1c524e;border-radius:9px;padding:10px 12px;font-size:.82rem;color:#a8d4ce;margin:0 0 12px}
+  .in.dk{background:#0c2f2d;border-color:#1c524e;color:#dfeceb}
+  .btn.dk{background:#0f3835;border:1px solid #1c524e;color:#dfeceb}
+  .toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);background:#1f2933;color:#fff;padding:10px 18px;border-radius:999px;font-size:.9rem;z-index:200;opacity:0;transition:opacity .25s;pointer-events:none;box-shadow:var(--shadow)}
+  .toast.show{opacity:1}
+  .hidden{display:none!important}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hd">
+    <span class="pin" id="pin" title="Küchenzettel">📌</span>
+    <h1>Küchenzettel</h1><span class="tag">REZEPT-NOTIZEN</span>
+    <span class="sp"></span>
+    <button id="camBtn" title="Foto-Notiz">📷</button>
+    <button id="favFilter" title="Markierte">☆</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="quick">
+    <input id="q" placeholder="Notiz oder Suche … z. B. „schnelles Abendessen“" autocomplete="off">
+    <button class="mic" id="qMic" title="Diktieren">🎤</button>
+  </div>
+  <div class="note" id="qNote"></div>
+
+  <div class="tabs" id="tabs"></div>
+  <div class="board" id="board"></div>
+</div>
+
+<button class="fab" id="addBtn"><span class="plus">＋</span> Zettel</button>
+<input type="file" id="camFile" accept="image/*" capture="environment" class="hidden">
+<div class="toast" id="toast"></div>
+
+<div class="ov" id="ov"><div class="sheet" id="sheet"></div></div>
+
+<div id="priv">
+  <div class="pv-top"><span style="font-size:20px">🗄️</span><h2>Stilles Fach</h2><span class="sp"></span><button id="pvLock" title="Schließen">✕</button></div>
+  <div class="pv-body" id="pvBody"></div>
+</div>
+
+<script type="module">
+import CommCore from "./comm-core/comm-core.js";
+
+/* ============================================================
+ * Küchenzettel — zweite Tarn-Hülle über DEMSELBEN comm-core (byte-1:1,
+ * Drift-Guard). Anderes Gesicht, gleicher Motor. Kein Autor/Impressum.
+ * ============================================================ */
+
+// IDENTISCHER Rendezvous-Startwert wie Kochfreunde → ein Netz, mehrere Hüllen.
+const RENDEZVOUS_SEED = "kf-kz-simnetz-v1";
+
+const store = {
+  get: async k => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : null; } catch(e){ return null; } },
+  set: async (k,v) => { localStorage.setItem(k, JSON.stringify(v)); },
+  del: async k => { localStorage.removeItem(k); },
+};
+await CommCore.init({ store, storeKey:"kz_state_v1", seed:RENDEZVOUS_SEED, euPolicy:"frei" });
+
+const $ = s => document.querySelector(s);
+const el = (t,c,h)=>{const e=document.createElement(t); if(c)e.className=c; if(h!=null)e.innerHTML=h; return e;};
+let toastT; function toast(m){ const t=$("#toast"); t.textContent=m; t.classList.add("show"); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove("show"),2200); }
+function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+// ---------------- Rezept-Notizen (Tarnung) ----------------
+const RKEY="kz_recipes";
+const CATS=["Alle","Schnell","Auflauf","Salate","Süßes","Suppen"];
+const SEED=[
+  {id:"z1",name:"Blitz-Nudeln mit Pesto",cat:"Schnell",time:"15 Min",diff:"leicht",fav:true,
+   ing:["250 g Nudeln","3 EL Pesto","Kirschtomaten","Parmesan"],steps:["Nudeln kochen.","Pesto & halbierte Tomaten unterheben.","Mit Parmesan servieren."]},
+  {id:"z2",name:"Kartoffel-Lauch-Auflauf",cat:"Auflauf",time:"50 Min",diff:"mittel",fav:false,
+   ing:["800 g Kartoffeln","2 Stangen Lauch","200 ml Sahne","100 g Käse","Muskat"],steps:["Kartoffeln & Lauch in Scheiben.","Schichten, mit Sahne übergießen.","Käse drauf, 40 Min bei 180°C."]},
+  {id:"z3",name:"Bunter Linsensalat",cat:"Salate",time:"25 Min",diff:"leicht",fav:false,
+   ing:["150 g Berglinsen","1 Paprika","1/2 Gurke","Petersilie","Zitrone, Olivenöl"],steps:["Linsen bissfest kochen, abkühlen.","Gemüse würfeln.","Alles mit Dressing mischen."]},
+  {id:"z4",name:"Grießbrei mit Zimt",cat:"Süßes",time:"12 Min",diff:"leicht",fav:false,
+   ing:["500 ml Milch","60 g Grieß","2 EL Zucker","Zimt","1 Apfel"],steps:["Milch erhitzen, Grieß einrühren.","Quellen lassen.","Mit Zimt & Apfelspalten servieren."]},
+];
+let recipes=[], curCat="Alle", favOnly=false;
+async function load(){ const s=await store.get(RKEY); recipes=Array.isArray(s)&&s.length?s:SEED.slice(); if(!s)await store.set(RKEY,recipes); }
+async function save(){ await store.set(RKEY,recipes); }
+
+function renderTabs(){ const t=$("#tabs"); t.innerHTML=""; CATS.forEach(c=>{ const b=el("button","tab"+(c===curCat?" on":""),esc(c)); b.onclick=()=>{curCat=c;renderTabs();renderBoard();}; t.appendChild(b); }); }
+function renderBoard(){
+  const b=$("#board"); b.innerHTML="";
+  let list=recipes.filter(r=>(curCat==="Alle"||r.cat===curCat)&&(!favOnly||r.fav));
+  const q=$("#q").dataset.filter; if(q) list=list.filter(r=>(r.name+" "+r.cat+" "+r.ing.join(" ")).toLowerCase().includes(q));
+  if(!list.length){ b.appendChild(el("div","empty","📝 Kein Zettel hier — tippe auf „＋ Zettel“.")); return; }
+  list.forEach(r=>{
+    const z=el("div","zettel");
+    z.innerHTML=`<div class="z-body"><div class="z-cat">${esc(r.cat)}</div><span class="star">${r.fav?"⭐":"☆"}</span>
+      <h3>${esc(r.name)}</h3><div class="z-meta"><span>⏱ ${esc(r.time||"")}</span><span>· ${esc(r.diff||"")}</span><span>· ${r.ing.length} Zutaten</span></div></div>`;
+    z.onclick=()=>detail(r.id); b.appendChild(z);
+  });
+}
+function detail(id){
+  const r=recipes.find(x=>x.id===id); if(!r) return;
+  $("#sheet").innerHTML=`<div class="det">
+    ${r.img?`<img src="${r.img}" style="width:100%;height:170px;object-fit:cover;border-radius:12px;margin-bottom:10px" alt="">`:""}
+    <span class="pill">${esc(r.cat)}</span><span class="pill">⏱ ${esc(r.time||"")}</span><span class="pill">${esc(r.diff||"")}</span>
+    <h2 style="margin:8px 0">${esc(r.name)}</h2>
+    <h3>Zutaten</h3><ul>${r.ing.map(i=>`<li>${esc(i)}</li>`).join("")}</ul>
+    <h3>Zubereitung</h3><ol>${r.steps.map(s=>`<li>${esc(s)}</li>`).join("")}</ol>
+    <div class="row" style="margin-top:16px">
+      <button class="btn ghost" id="dFav">${r.fav?"⭐ Markiert":"☆ Markieren"}</button>
+      <button class="btn ghost" id="dEdit">✏️ Bearbeiten</button>
+      <button class="btn ghost" id="dDel" style="color:#b4451f">🗑 Löschen</button></div></div>`;
+  openOv();
+  $("#dFav").onclick=async()=>{r.fav=!r.fav;await save();renderBoard();detail(id);};
+  $("#dEdit").onclick=()=>form(r);
+  $("#dDel").onclick=async()=>{recipes=recipes.filter(x=>x.id!==id);await save();renderBoard();closeOv();toast("Zettel gelöscht");};
+}
+function form(r){
+  const isNew=!r; r=r||{id:"z"+Date.now(),cat:"Schnell",fav:false,ing:[],steps:[]};
+  $("#sheet").innerHTML=`<h2>${isNew?"Neuer Zettel":"Zettel bearbeiten"}</h2>
+    <label class="fld"><span>Name</span><input class="in" id="fName" value="${esc(r.name||"")}"></label>
+    <div class="row"><label class="fld" style="flex:1"><span>Kategorie</span>
+      <select class="in" id="fCat">${CATS.filter(c=>c!=="Alle").map(c=>`<option ${c===r.cat?"selected":""}>${c}</option>`).join("")}</select></label>
+      <label class="fld" style="width:100px"><span>Zeit</span><input class="in" id="fTime" value="${esc(r.time||"")}"></label>
+      <label class="fld" style="width:110px"><span>Aufwand</span><input class="in" id="fDiff" value="${esc(r.diff||"leicht")}"></label></div>
+    <label class="fld"><span>Zutaten (eine pro Zeile)</span><textarea class="in" id="fIng">${esc((r.ing||[]).join("\n"))}</textarea></label>
+    <label class="fld"><span>Zubereitung (ein Schritt pro Zeile)</span><textarea class="in" id="fSteps">${esc((r.steps||[]).join("\n"))}</textarea></label>
+    <button class="btn wide" id="fSave">Speichern</button>`;
+  openOv();
+  $("#fSave").onclick=async()=>{
+    r.name=$("#fName").value.trim()||"Unbenannter Zettel"; r.cat=$("#fCat").value; r.time=$("#fTime").value.trim(); r.diff=$("#fDiff").value.trim();
+    r.ing=$("#fIng").value.split("\n").map(s=>s.trim()).filter(Boolean); r.steps=$("#fSteps").value.split("\n").map(s=>s.trim()).filter(Boolean);
+    if(isNew) recipes.unshift(r); await save(); renderBoard(); closeOv(); toast(isNew?"Zettel angelegt":"Gespeichert");
+  };
+}
+$("#camBtn").onclick=()=>$("#camFile").click();
+$("#camFile").onchange=e=>{ const f=e.target.files[0]; if(!f)return; const rd=new FileReader(); rd.onload=()=>form({id:"z"+Date.now(),cat:"Schnell",fav:false,ing:[],steps:[],img:rd.result,name:""}); rd.readAsDataURL(f); e.target.value=""; };
+function openOv(){ $("#ov").classList.add("show"); } function closeOv(){ $("#ov").classList.remove("show"); }
+$("#ov").onclick=e=>{ if(e.target.id==="ov") closeOv(); };
+$("#addBtn").onclick=()=>form(null);
+$("#favFilter").onclick=e=>{ favOnly=!favOnly; e.currentTarget.textContent=favOnly?"⭐":"☆"; renderBoard(); };
+
+// Quick-Bar: Notiz/Suche (cover) + stiller Losungswort-Check
+$("#q").addEventListener("input",e=>{ e.target.dataset.filter=e.target.value.trim().toLowerCase(); renderBoard(); });
+$("#q").addEventListener("keydown",e=>{ if(e.key==="Enter") handleQuick(e.target.value); });
+async function handleQuick(text){
+  text=(text||"").trim(); if(!text) return;
+  try{ if(await CommCore.unlock.fromSpokenPhrase(text)){ $("#q").value=""; $("#q").dataset.filter=""; renderBoard(); openPriv(); return; } }catch(e){}
+  const n=$("#qNote"); const hit=recipes.find(r=>(r.name+" "+r.ing.join(" ")).toLowerCase().includes((text.toLowerCase().split(" ").find(w=>w.length>3))||"~"));
+  n.textContent=hit?`Passt dazu: „${hit.name}“ — unten in der Liste.`:"Notiere es dir mit „＋ Zettel“, dann findest du es hier wieder.";
+  n.classList.add("show"); setTimeout(()=>n.classList.remove("show"),6000);
+}
+const speech=CommCore.speech.module();
+$("#qMic").onclick=()=>{
+  if(!speech){ toast("Diktat hier nicht verfügbar — bitte tippen."); return; }
+  const rec=speech.makeBrowserRecognizer({lang:"de-DE",onResult:t=>{$("#q").value=t;handleQuick(t);},onError:m=>toast(m),onEnd:()=>$("#qMic").classList.remove("live")});
+  if(!rec.supported){ toast("Diktat nicht verfügbar — bitte tippen."); return; }
+  $("#qMic").classList.add("live"); rec.start();
+};
+
+// Ersteinrichtung: langer Druck (2 s) auf die 📌-Nadel (unauffällige Geste).
+let pressT; const pin=$("#pin");
+pin.addEventListener("pointerdown",()=>{ pressT=setTimeout(async()=>{
+  const exists=await store.get("kz_state_v1");
+  if(exists){ if(CommCore.isUnlocked()) openPriv(); return; }
+  setup();
+},2000); });
+["pointerup","pointerleave"].forEach(ev=>pin.addEventListener(ev,()=>clearTimeout(pressT)));
+function setup(){
+  $("#sheet").innerHTML=`<h2>🗄️ Stilles Fach einrichten</h2>
+    <div class="note show" style="margin:0 0 12px">Sprich oder tippe dein <b>vereinbartes Losungswort</b>. Damit öffnest du später still dieses Fach. Ohne das Wort ist hier nichts zu finden.</div>
+    <label class="fld"><span>Losungswort (harmlos, ein Satz ist gut)</span><input class="in" id="suP" placeholder="z. B. das rezept vom sonntag"></label>
+    <div class="row"><button class="btn ghost" id="suMic">🎤 Sprechen</button><button class="btn" id="suGo" style="flex:1">Einrichten</button></div>`;
+  openOv();
+  $("#suMic").onclick=()=>{ if(!speech)return toast("Bitte tippen."); const r=speech.makeBrowserRecognizer({lang:"de-DE",onResult:t=>$("#suP").value=t,onError:m=>toast(m)}); if(r.supported)r.start(); else toast("Bitte tippen."); };
+  $("#suGo").onclick=async()=>{ const p=$("#suP").value.trim(); if(p.length<4)return toast("Etwas länger bitte."); const res=await CommCore.enroll.fromSpokenPhrase(p); if(res.ok){closeOv();openPriv();toast("Fach eingerichtet.");} else toast(res.reason||"Fehler."); };
+}
+
+// ---------------- Stilles Fach (comm-core) ----------------
+let curPeer=null, inboxTimer=null;
+function openPriv(){ $("#priv").classList.add("show"); renderPriv(); }
+function closePriv(){ $("#priv").classList.remove("show"); clearInterval(inboxTimer); inboxTimer=null; curPeer=null; }
+$("#pvLock").onclick=()=>{ CommCore.unlock.lock(); closePriv(); };
+
+function renderPriv(){
+  if(curPeer){ renderThread(); return; }
+  const body=$("#pvBody"), myKey=CommCore.identity.pubKey()||"—", contacts=CommCore.pairing.listContacts();
+  body.innerHTML=`
+    <div class="banner">Ehrliche Grenze: geschützt ist der <b>Inhalt</b> (Ende-zu-Ende), nicht „wer mit wem“. Für den Ernstfall bleiben Signal / Tor die stärkeren Werkzeuge.</div>
+    <div class="pv-card"><h3>👤 Dein Schlüssel</h3><div class="muted" style="margin-bottom:6px">Gib ihn deinem Vertrauten (persönlich / vorlesen).</div>
+      <div class="code" id="myKey">${esc(myKey)}</div><div class="row" style="margin-top:8px"><button class="btn dk" id="copyKey">📋 Kopieren</button></div></div>
+    <div class="pv-card"><h3>➕ Vertrauten hinzufügen</h3>
+      <label class="fld"><span style="color:#9fe6dc">Sein Schlüssel (64 Zeichen)</span><input class="in dk" id="cPub" placeholder="einfügen …"></label>
+      <label class="fld"><span style="color:#9fe6dc">Name</span><input class="in dk" id="cName" placeholder="z. B. Sohn"></label>
+      <button class="btn" id="cAdd">Hinzufügen</button></div>
+    <div class="pv-card"><h3>👥 Vertrauter Kreis</h3><div id="clist">${contacts.length?"":'<div class="muted">Noch niemand hinzugefügt.</div>'}</div></div>
+    <div class="pv-card"><h3>🎒 In andere App mitnehmen</h3><div class="muted" style="margin-bottom:8px">Verschlüsseltes Identitäts-Päckchen für eine Schwester-App.</div>
+      <div class="row"><button class="btn dk" id="expBtn">⬆️ Erstellen</button><button class="btn dk" id="impBtn">⬇️ Laden</button></div></div>
+    <div class="pv-card"><h3>📡 Verbindung</h3><div class="muted">Modus:</div>
+      <div class="row" style="margin:6px 0"><button class="btn ${CommCore.mode.get()==="normal"?"":"dk"}" id="mNorm">Alltag</button><button class="btn ${CommCore.mode.get()==="vorsicht"?"":"dk"}" id="mVor">Vorsicht</button></div>
+      <div class="muted" id="relInfo"></div><button class="btn dk" id="callBtn" style="margin-top:8px">📞 Anrufen (schläft — kommt später)</button></div>`;
+  $("#copyKey").onclick=()=>{ navigator.clipboard?.writeText(myKey); toast("Schlüssel kopiert"); };
+  $("#cAdd").onclick=async()=>{ const r=await CommCore.pairing.addContact($("#cPub").value.trim(),$("#cName").value.trim()); if(r.ok){toast("Hinzugefügt");renderPriv();} else toast(r.reason||"Ungültig"); };
+  const cl=$("#clist"); contacts.forEach(c=>{ const d=el("div","contact"); d.innerHTML=`<div class="av">${esc((c.name||"?")[0]||"?").toUpperCase()}</div><div style="flex:1"><div class="nm">${esc(c.name||"Vertrauter")}</div><div class="sub">${esc(c.pub.slice(0,16))}…</div></div><span>›</span>`; d.onclick=()=>{curPeer=c.pub;renderThread();}; cl.appendChild(d); });
+  $("#expBtn").onclick=exportPacket; $("#impBtn").onclick=importPacket;
+  $("#mNorm").onclick=()=>{CommCore.mode.set("normal");renderPriv();}; $("#mVor").onclick=()=>{CommCore.mode.set("vorsicht");toast("Vorsicht: server-los, mehr Metadaten sichtbar.");renderPriv();};
+  $("#callBtn").onclick=()=>toast(CommCore.call.start().reason);
+  try{ $("#relInfo").textContent="Relais heute: "+CommCore.relay.currentByTimeSeed()[0].replace("wss://",""); }catch(e){}
+}
+async function exportPacket(){
+  const pw=prompt("Passwort für das Päckchen (mind. 8 Zeichen):"); if(!pw) return;
+  try{ const pkt=await CommCore.identity.exportPacket(pw);
+    $("#sheet").innerHTML=`<h2>🎒 Dein Päckchen</h2><div class="note show" style="margin:0 0 10px">Kopieren und in der anderen App unter „Laden“ einfügen. Verschlüsselt — ohne Passwort wertlos.</div><div class="code" style="background:#f4f6f8;color:#1f2933;border-color:#dfe4ea">${esc(pkt)}</div><button class="btn wide" id="pc" style="margin-top:12px">📋 Kopieren</button>`;
+    openOv(); $("#pc").onclick=()=>{navigator.clipboard?.writeText(pkt);toast("Kopiert");};
+  }catch(e){ toast(e.message||"Fehler"); }
+}
+async function importPacket(){
+  $("#sheet").innerHTML=`<h2>⬇️ Päckchen laden</h2>
+    <label class="fld"><span>Päckchen-Text</span><textarea class="in" id="ipT" placeholder="ccpkt1…"></textarea></label>
+    <label class="fld"><span>Päckchen-Passwort</span><input class="in" id="ipPw" type="password"></label>
+    <label class="fld"><span>Losungswort für diese App (optional, für dauerhaft)</span><input class="in" id="ipPh"></label>
+    <button class="btn wide" id="ipGo">Laden</button>`;
+  openOv();
+  $("#ipGo").onclick=async()=>{ const ok=await CommCore.identity.importPacket($("#ipT").value.trim(),$("#ipPw").value,$("#ipPh").value.trim()||undefined); if(ok){closeOv();toast("Identität geladen");renderPriv();} else toast("Konnte nicht laden."); };
+}
+async function renderThread(){
+  const c=CommCore.pairing.listContacts().find(x=>x.pub===curPeer), sas=await CommCore.pairing.safetyNumber(curPeer);
+  $("#pvBody").innerHTML=`<div class="row" style="align-items:center;margin-bottom:8px"><button class="btn dk" id="back">‹ zurück</button><h3 style="margin:0 0 0 6px;color:#eaf6f4">${esc(c?.name||"Vertrauter")}</h3></div>
+    <div class="pv-card"><h3>🔢 Sicherheitsnummer — „lies mir die Zahlen vor“</h3><div class="muted">Stimmen sie beidseits überein, ist die Leitung echt (kein Mithörer).</div><div class="sas">${esc(sas)}</div></div>
+    <div class="pv-card"><div class="thread" id="thread"><div class="muted">Lade …</div></div>
+      <div class="row" style="margin-top:8px"><input class="in dk" id="msgTxt" placeholder="Nachricht …" style="flex:1"><button class="btn dk" id="voiceBtn">🎤</button><button class="btn" id="sendBtn">Senden</button></div></div>`;
+  $("#back").onclick=()=>{curPeer=null;clearInterval(inboxTimer);inboxTimer=null;renderPriv();};
+  $("#sendBtn").onclick=sendMsg; $("#msgTxt").addEventListener("keydown",e=>{if(e.key==="Enter")sendMsg();}); $("#voiceBtn").onclick=recordVoice;
+  await refreshInbox(); clearInterval(inboxTimer); inboxTimer=setInterval(refreshInbox,12000);
+}
+async function refreshInbox(){
+  if(!curPeer)return; const msgs=await CommCore.msg.inbox(curPeer,{waitMs:4000}); const t=$("#thread"); if(!t)return;
+  if(!msgs.length){ t.innerHTML='<div class="muted">Noch keine Nachrichten.</div>'; return; }
+  t.innerHTML=""; msgs.forEach(m=>{ const b=el("div","bub "+(m.direction==="out"?"out":"in")); const inner=m.kind==="voice"?"🎧 Sprachnotiz":(m.kind==="image"?"🖼️ Bild":esc(m.body)); b.innerHTML=inner+`<span class="t">${new Date(m.ts||0).toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"})}</span>`; if(m.kind==="voice"&&m.body){b.style.cursor="pointer";b.onclick=()=>playVoice(m.body);} t.appendChild(b); });
+  t.scrollTop=t.scrollHeight;
+}
+async function sendMsg(){ const inp=$("#msgTxt"),v=inp.value.trim(); if(!v||!curPeer)return; inp.value=""; const r=await CommCore.msg.send(curPeer,{text:v}); if(!r.ok)return toast(r.reason||"Fehler"); await refreshInbox(); }
+function playVoice(b64){ try{ new Audio("data:audio/webm;base64,"+b64).play(); }catch(e){ toast("Konnte nicht abspielen"); } }
+async function recordVoice(){
+  if(!speech)return toast("Aufnahme nicht verfügbar"); const rec=await speech.startRecording(); if(!rec.available)return toast(rec.reason||"Kein Mikrofon");
+  toast("Aufnahme läuft — nochmal tippen zum Senden"); const btn=$("#voiceBtn");
+  btn.onclick=async()=>{ btn.onclick=recordVoice; const out=await rec.stop(); if(out.available&&out.content&&curPeer){await CommCore.msg.send(curPeer,{voice:out.content});await refreshInbox();toast("Gesendet");} else toast("Aufnahme leer"); };
+}
+
+// Start
+await load(); renderTabs(); renderBoard();
+if("serviceWorker" in navigator){ try{ navigator.serviceWorker.register("./sw.js"); }catch(e){} }
+window.__kz = { CommCore, handleQuick, openPriv, store };
+</script>
+</body>
+</html>
