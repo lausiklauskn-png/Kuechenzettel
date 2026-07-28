@@ -3,7 +3,8 @@
  * Prüft die MECHANIK des Kerns gegen ein In-Memory-Mock-Relais (der echte
  * Transport-Code läuft, nur die WebSocket ist gemockt — store-and-forward).
  * NICHT geprüft (ehrlich): echte öffentliche Relais (wss blockiert in der
- * Sandbox), Browser-UI, Live-Mikrofon, Tarnung gegen ein echtes Regime.
+ * Sandbox), Browser-UI, Live-Mikrofon, Schutz gegen gezielte Überwachung
+ * (dafür bleiben Signal / Tor die stärkeren Werkzeuge).
  *
  * Lauf: node tests/comm-core.test.mjs
  */
@@ -70,8 +71,8 @@ async function run() {
   const now = () => hub.clock.t;
   const txFactory = (o) => makeTransport({ ...o, makeSocket: hub.mockSocket, now });
 
-  // ---------------- 1. Freischaltung (gesprochenes Losungswort) ----------------
-  section("1. Losungswort-Freischaltung + existenz-unsichtbare Ablage");
+  // ---------------- 1. Entsperren (Passwort, auch gesprochen) ----------------
+  section("1. Passwort-Entsperren + verschlüsselte Ablage am Gerät");
   const A = await freshCore("A");
   const storeA = makeStore();
   await A.init({ store: storeA, storeKey: "kf_state_v1", seed: "sim-seed", now, makeTransport: txFactory });
@@ -81,13 +82,13 @@ async function run() {
   ok(A.isUnlocked(), "A ist nach enroll entsperrt");
   // Store-Eintrag ist ein namenloser Chiffrat-Klumpen — KEIN Krypto-Etikett.
   const raw = JSON.stringify(storeA._m.get("kf_state_v1"));
-  ok(!/jason-tresor|sbkim|PBKDF2|AES|tresor|priv|pub/i.test(raw), "Ablage trägt keine Krypto-/Identitäts-Etiketten (existenz-unsichtbar)");
+  ok(!/jason-tresor|sbkim|PBKDF2|AES|tresor|priv|pub/i.test(raw), "verschlüsselte Ablage trägt keine Klartext-Krypto-/Identitäts-Etiketten");
   ok(Object.keys(JSON.parse(raw)).sort().join("") === "cis", "Ablage hat nur neutrale Felder {s,i,c}");
 
   // Sperren + falsches Wort scheitert, richtiges Wort öffnet.
   A.unlock.lock();
   ok(!A.isUnlocked(), "lock() sperrt");
-  ok((await A.unlock.fromSpokenPhrase("falsches wort")) === false, "falsches Losungswort öffnet NICHT");
+  ok((await A.unlock.fromSpokenPhrase("falsches wort")) === false, "falsches Passwort öffnet NICHT");
   ok((await A.unlock.fromSpokenPhrase("Wie macht man Omas Gulasch")) === true, "richtiges Wort öffnet (normalisiert, groß/klein egal)");
 
   // ---------------- 2. Paaren + Sicherheitsnummer (TOFU) ----------------

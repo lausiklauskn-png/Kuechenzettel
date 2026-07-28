@@ -37,7 +37,7 @@
   .hd button{width:38px;height:38px;border-radius:9px;background:rgba(255,255,255,.15);display:grid;place-items:center;font-size:18px;transition:.15s}
   .hd button:active{transform:scale(.9)}
 
-  /* quick bar (Notiz/Suche) — cover-Feature + stiller Ausloeser */
+  /* quick bar (Notiz/Suche) */
   .quick{display:flex;gap:8px;margin:16px 0 4px}
   .quick input{flex:1;padding:12px 14px;border-radius:10px;border:1px solid var(--line);background:var(--paper);
     font-size:.98rem;color:var(--ink);box-shadow:var(--shadow)}
@@ -95,7 +95,7 @@
   .det h3{margin:16px 0 6px;color:var(--teal-d);border-bottom:1px solid var(--line);padding-bottom:4px}
   .det ul,.det ol{margin:0;padding-left:20px;line-height:1.75}
 
-  /* hidden mode — "Stilles Fach", cool tone distinct from cover */
+  /* Nachrichten-Ansicht — ruhiger, kühler Ton, klar abgesetzt */
   #priv{position:fixed;inset:0;z-index:80;background:#0f2b2a;color:#dfeceb;display:none;flex-direction:column}
   #priv.show{display:flex}
   .pv-top{display:flex;align-items:center;gap:10px;padding:15px 16px;background:#0b3d3a;box-shadow:0 2px 10px rgba(0,0,0,.3)}
@@ -132,6 +132,7 @@
     <span class="pin" id="pin" title="Küchenzettel">📌</span>
     <h1>Küchenzettel</h1><span class="tag">REZEPT-NOTIZEN</span>
     <span class="sp"></span>
+    <button id="msgBtn" title="Verschlüsselte Nachrichten">💬</button>
     <button id="camBtn" title="Foto-Notiz">📷</button>
     <button id="favFilter" title="Markierte">☆</button>
   </div>
@@ -146,6 +147,9 @@
 
   <div class="tabs" id="tabs"></div>
   <div class="board" id="board"></div>
+  <footer style="text-align:center;margin-top:28px;padding-top:14px;border-top:1px solid var(--line)">
+    <button id="imprBtn" style="font-size:.74rem;color:var(--ink-2)">Impressum &amp; Datenschutz</button>
+  </footer>
 </div>
 
 <button class="fab" id="addBtn"><span class="plus">＋</span> Zettel</button>
@@ -155,7 +159,7 @@
 <div class="ov" id="ov"><div class="sheet" id="sheet"></div></div>
 
 <div id="priv">
-  <div class="pv-top"><span style="font-size:20px">🗄️</span><h2>Stilles Fach</h2><span class="sp"></span><button id="pvLock" title="Schließen">✕</button></div>
+  <div class="pv-top"><span style="font-size:20px">🔐</span><h2>Verschlüsselte Nachrichten</h2><span class="sp"></span><button id="pvLock" title="Schließen">✕</button></div>
   <div class="pv-body" id="pvBody"></div>
 </div>
 
@@ -163,8 +167,10 @@
 import CommCore from "./comm-core/comm-core.js";
 
 /* ============================================================
- * Küchenzettel — zweite Tarn-Hülle über DEMSELBEN comm-core (byte-1:1,
- * Drift-Guard). Anderes Gesicht, gleicher Motor. Kein Autor/Impressum.
+ * Küchenzettel — Rezept-Notizen + offen benanntes, Ende-zu-Ende-
+ * verschlüsseltes Nachrichten-Feature. Gleicher comm-core-Motor wie
+ * Kochfreunde (byte-1:1, Drift-Guard) in einer ehrlichen Hülle:
+ * sichtbarer Einstieg, klare Benennung, Impressum. Keine Verschleierung.
  * ============================================================ */
 
 // IDENTISCHER Rendezvous-Startwert wie Kochfreunde → ein Netz, mehrere Hüllen.
@@ -182,7 +188,7 @@ const el = (t,c,h)=>{const e=document.createElement(t); if(c)e.className=c; if(h
 let toastT; function toast(m){ const t=$("#toast"); t.textContent=m; t.classList.add("show"); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove("show"),2200); }
 function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
 
-// ---------------- Rezept-Notizen (Tarnung) ----------------
+// ---------------- Rezept-Notizen ----------------
 const RKEY="kz_recipes";
 const CATS=["Alle","Schnell","Auflauf","Salate","Süßes","Suppen"];
 const SEED=[
@@ -254,12 +260,11 @@ $("#ov").onclick=e=>{ if(e.target.id==="ov") closeOv(); };
 $("#addBtn").onclick=()=>form(null);
 $("#favFilter").onclick=e=>{ favOnly=!favOnly; e.currentTarget.textContent=favOnly?"⭐":"☆"; renderBoard(); };
 
-// Quick-Bar: Notiz/Suche (cover) + stiller Losungswort-Check
+// Quick-Bar: reine Notiz/Suche (kein versteckter Einstieg mehr).
 $("#q").addEventListener("input",e=>{ e.target.dataset.filter=e.target.value.trim().toLowerCase(); renderBoard(); });
 $("#q").addEventListener("keydown",e=>{ if(e.key==="Enter") handleQuick(e.target.value); });
 async function handleQuick(text){
   text=(text||"").trim(); if(!text) return;
-  try{ if(await CommCore.unlock.fromSpokenPhrase(text)){ $("#q").value=""; $("#q").dataset.filter=""; renderBoard(); openPriv(); return; } }catch(e){}
   const n=$("#qNote"); const hit=recipes.find(r=>(r.name+" "+r.ing.join(" ")).toLowerCase().includes((text.toLowerCase().split(" ").find(w=>w.length>3))||"~"));
   n.textContent=hit?`Passt dazu: „${hit.name}“ — unten in der Liste.`:"Notiere es dir mit „＋ Zettel“, dann findest du es hier wieder.";
   n.classList.add("show"); setTimeout(()=>n.classList.remove("show"),6000);
@@ -272,25 +277,57 @@ $("#qMic").onclick=()=>{
   $("#qMic").classList.add("live"); rec.start();
 };
 
-// Ersteinrichtung: langer Druck (2 s) auf die 📌-Nadel (unauffällige Geste).
-let pressT; const pin=$("#pin");
-pin.addEventListener("pointerdown",()=>{ pressT=setTimeout(async()=>{
+// Sichtbarer Einstieg: Knopf 💬 im Kopf. Kein Passwort → Ersteinrichtung,
+// gesperrt → entsperren, offen → Nachrichten. Offen benannt, nichts versteckt.
+$("#msgBtn").onclick=openMessages;
+async function openMessages(){
   const exists=await store.get("kz_state_v1");
-  if(exists){ if(CommCore.isUnlocked()) openPriv(); return; }
-  setup();
-},2000); });
-["pointerup","pointerleave"].forEach(ev=>pin.addEventListener(ev,()=>clearTimeout(pressT)));
-function setup(){
-  $("#sheet").innerHTML=`<h2>🗄️ Stilles Fach einrichten</h2>
-    <div class="note show" style="margin:0 0 12px">Sprich oder tippe dein <b>vereinbartes Losungswort</b>. Damit öffnest du später still dieses Fach. Ohne das Wort ist hier nichts zu finden.</div>
-    <label class="fld"><span>Losungswort (harmlos, ein Satz ist gut)</span><input class="in" id="suP" placeholder="z. B. das rezept vom sonntag"></label>
+  if(!exists){ setupMessages(); return; }
+  if(CommCore.isUnlocked()){ openPriv(); return; }
+  unlockMessages();
+}
+function setupMessages(){
+  $("#sheet").innerHTML=`<h2>🔐 Verschlüsselte Nachrichten einrichten</h2>
+    <div class="note show" style="margin:0 0 12px">Lege ein <b>Passwort</b> fest. Es schützt deine Nachrichten-Schlüssel auf diesem Gerät. Die Nachrichten selbst sind <b>Ende-zu-Ende verschlüsselt</b> — nur du und dein Kontakt können mitlesen.</div>
+    <label class="fld"><span>Passwort (ein Satz ist gut, mind. 4 Zeichen)</span><input class="in" id="suP" type="password" placeholder="dein Passwort"></label>
     <div class="row"><button class="btn ghost" id="suMic">🎤 Sprechen</button><button class="btn" id="suGo" style="flex:1">Einrichten</button></div>`;
   openOv();
   $("#suMic").onclick=()=>{ if(!speech)return toast("Bitte tippen."); const r=speech.makeBrowserRecognizer({lang:"de-DE",onResult:t=>$("#suP").value=t,onError:m=>toast(m)}); if(r.supported)r.start(); else toast("Bitte tippen."); };
-  $("#suGo").onclick=async()=>{ const p=$("#suP").value.trim(); if(p.length<4)return toast("Etwas länger bitte."); const res=await CommCore.enroll.fromSpokenPhrase(p); if(res.ok){closeOv();openPriv();toast("Fach eingerichtet.");} else toast(res.reason||"Fehler."); };
+  $("#suGo").onclick=async()=>{ const p=$("#suP").value.trim(); if(p.length<4)return toast("Etwas länger bitte."); const res=await CommCore.enroll.fromSpokenPhrase(p); if(res.ok){closeOv();openPriv();toast("Eingerichtet.");} else toast(res.reason||"Fehler."); };
+}
+function unlockMessages(){
+  $("#sheet").innerHTML=`<h2>🔐 Nachrichten entsperren</h2>
+    <div class="note show" style="margin:0 0 12px">Gib dein <b>Passwort</b> ein, um deine verschlüsselten Nachrichten auf diesem Gerät zu öffnen.</div>
+    <label class="fld"><span>Passwort</span><input class="in" id="ulP" type="password" placeholder="dein Passwort"></label>
+    <div class="row"><button class="btn ghost" id="ulMic">🎤 Sprechen</button><button class="btn" id="ulGo" style="flex:1">Entsperren</button></div>`;
+  openOv();
+  $("#ulMic").onclick=()=>{ if(!speech)return toast("Bitte tippen."); const r=speech.makeBrowserRecognizer({lang:"de-DE",onResult:t=>$("#ulP").value=t,onError:m=>toast(m)}); if(r.supported)r.start(); else toast("Bitte tippen."); };
+  $("#ulGo").onclick=async()=>{ const p=$("#ulP").value.trim(); if(!p)return; if(await CommCore.unlock.fromSpokenPhrase(p)){closeOv();openPriv();} else toast("Passwort stimmt nicht."); };
 }
 
-// ---------------- Stilles Fach (comm-core) ----------------
+// Impressum & Datenschutz — offen verlinkt.
+$("#imprBtn").onclick=showImpressum;
+function showImpressum(){
+  $("#sheet").innerHTML=`<div class="det">
+    <h2>Impressum &amp; Datenschutz</h2>
+    <h3>Anbieter</h3>
+    <p style="color:var(--ink-2)">[Name]<br>[Anschrift]<br>[E-Mail]<br><span style="font-size:.8rem">(Bitte durch die echten Angaben ersetzen.)</span></p>
+    <h3>Was diese App ist</h3>
+    <p>Küchenzettel ist eine Rezept-Notiz-App. Zusätzlich bietet sie ein <b>offen benanntes, Ende-zu-Ende-verschlüsseltes Nachrichten-Feature</b> für einen selbst gewählten, vertrauten Kreis.</p>
+    <h3>Daten</h3>
+    <ul>
+      <li>Rezepte, Notizen und Nachrichten-Schlüssel liegen <b>nur lokal</b> in deinem Browser.</li>
+      <li>Nachrichten sind <b>Ende-zu-Ende verschlüsselt</b> — nur du und dein Kontakt können mitlesen.</li>
+      <li>Zum Übertragen werden <b>öffentliche Relais-Server</b> genutzt. Die <b>Inhalte</b> sind verschlüsselt; <b>Verbindungs-Metadaten</b> („wer wann online ist") sind dabei nicht geschützt.</li>
+      <li>Kein Konto, kein Tracking, keine Werbung, keine Weitergabe an Dritte.</li>
+    </ul>
+    <h3>Ehrliche Grenze</h3>
+    <p>Diese App schützt den <b>Inhalt</b> deiner Nachrichten. Für Situationen mit gezielter Überwachung sind erprobte Werkzeuge wie <b>Signal</b> und <b>Tor</b> die stärkere Wahl.</p>
+  </div>`;
+  openOv();
+}
+
+// ---------------- Verschlüsselte Nachrichten (comm-core) ----------------
 let curPeer=null, inboxTimer=null;
 function openPriv(){ $("#priv").classList.add("show"); renderPriv(); }
 function closePriv(){ $("#priv").classList.remove("show"); clearInterval(inboxTimer); inboxTimer=null; curPeer=null; }
@@ -332,7 +369,7 @@ async function importPacket(){
   $("#sheet").innerHTML=`<h2>⬇️ Päckchen laden</h2>
     <label class="fld"><span>Päckchen-Text</span><textarea class="in" id="ipT" placeholder="ccpkt1…"></textarea></label>
     <label class="fld"><span>Päckchen-Passwort</span><input class="in" id="ipPw" type="password"></label>
-    <label class="fld"><span>Losungswort für diese App (optional, für dauerhaft)</span><input class="in" id="ipPh"></label>
+    <label class="fld"><span>Passwort für diese App (optional, für dauerhaftes Merken)</span><input class="in" id="ipPh" type="password"></label>
     <button class="btn wide" id="ipGo">Laden</button>`;
   openOv();
   $("#ipGo").onclick=async()=>{ const ok=await CommCore.identity.importPacket($("#ipT").value.trim(),$("#ipPw").value,$("#ipPh").value.trim()||undefined); if(ok){closeOv();toast("Identität geladen");renderPriv();} else toast("Konnte nicht laden."); };
