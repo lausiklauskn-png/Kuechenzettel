@@ -25,7 +25,7 @@ const EXPECTED = [
   { file: "comm-core/vendor/noble-secp256k1.js",  sha: "8f3879ca422c4fdfe7ca0361688636fa7cc550a59bd94d512ed6ec79aa3d55d1", src: "Privat-Brain/modules/noble-secp256k1.js" },
   { file: "comm-core/vendor/dm_crypto.js",         sha: "e9c973f0459c5f03fa80b47d3cd4505ef6d4bd689e409569370a59db2586ba63", src: "Privat-Brain/modules/dm_crypto.js" },
   { file: "comm-core/vendor/jasonlib.js",          sha: "d9b260980bf34dc3682fd062f15e2fcb18b305350833cce88b4980ab0b3f64df", src: "Jasons-Tresor/jasons-bibliothek/index.html (JASONLIB-CORE-START..END)" },
-  { file: "comm-core/vendor/21_spracheingabe.js",  sha: "6be3902c67c3ebfb24a845c59bad9147af903c467b7fb7535bc26cc7943b2a49", src: "Sage-Protokol/src/modules/21_spracheingabe.js" },
+  { file: "comm-core/vendor/21_spracheingabe.js",  sha: "020ca26ff52f2ed726f6344bd3ac55eb52e3472a7f97bdd41bdd0d54132777ba", src: "Sage-Protokol/src/modules/21_spracheingabe.js" },
   { file: "comm-core/vendor/20_schluessel_safe.js", sha: "e7e25c9070e93f8267171d2b626109cfd90cb481c2781242f5f7dfc203f031f3", src: "Sage-Protokol/src/modules/20_schluessel_safe.js" },
 ];
 
