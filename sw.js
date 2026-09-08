@@ -5,7 +5,7 @@
  * CACHE_VERSION erhöhen. WebSocket-Relais-Verkehr geht am SW vorbei (er
  * fängt nur GET-Navigations-/Asset-Requests ab).
  */
-const CACHE_VERSION = "kuechenzettel-v1";
+const CACHE_VERSION = "kuechenzettel-v2";
 const SHELL = [
   "./",
   "./index.html",
