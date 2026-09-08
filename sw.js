@@ -24,9 +24,27 @@ const SHELL = [
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE_VERSION).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
 });
+/* ⚠ NUR EIGENE VORRAETE AUFRAEUMEN — `caches` gehoert dem URSPRUNG, nicht dem
+ * Pfad. Auf lausiklauskn-png.github.io liegen rund zwanzig Apps; ein Filter
+ * `k !== CACHE_VERSION` laesst ALLE fremden durch und loescht sie.
+ *
+ * Gemessen am 2026-09-08 (Sage-Protokol/tests/vorrat_wirkung.mjs): diese App
+ * nur zu OEFFNEN loeschte den Vorrat von mycel-karte. Kein Datenverlust, aber
+ * die Geschwister-App war bis zum naechsten Online-Besuch nicht mehr
+ * offline-faehig.
+ *
+ * Das Praefix ist aus CACHE_VERSION ABGELESEN, nicht geraten. Muster kopiert
+ * aus Tomys-Hub/bookledger/sw.js — es steht im Netz schon an vier Stellen.
+ *
+ * ⚠ ES MUSS BEIDES TUN: fremde Vorraete stehen lassen UND die eigenen alten
+ * weiter wegraeumen. Ein zu enges Praefix laesst sie ewig wachsen — derselbe
+ * Fehler, nur andersherum. */
+const VORRAT_PRAEFIX = "kuechenzettel-";
 self.addEventListener("activate", e => {
   e.waitUntil(caches.keys().then(keys =>
-    Promise.all(keys.filter(k => k !== CACHE_VERSION).map(k => caches.delete(k)))
+    Promise.all(keys
+      .filter(k => k.startsWith(VORRAT_PRAEFIX) && k !== CACHE_VERSION)
+      .map(k => caches.delete(k)))
   ).then(() => self.clients.claim()));
 });
 self.addEventListener("fetch", e => {
