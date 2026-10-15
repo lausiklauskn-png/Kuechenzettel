@@ -12,6 +12,8 @@
 <!-- © 2026 Klaus Nitzsche — Alle Rechte vorbehalten. Original & Urheber: github.com/lausiklauskn-png/Kuechenzettel -->
 <html lang="de">
 <head>
+<!-- Schublade des SBKIM-Knotens: steht VOR jedem Skript, weil Modul 01 den Wert beim Laden liest. Nie ändern. -->
+<script>window.SBKIM_DB_SUFFIX = "kuechenzettel";</script>
 <script>/* FP-COPYRIGHT */window._CR=Object.freeze({c:'\u00a9 2026 Klaus Nitzsche',m:'info@family-projekt.de',r:'All rights reserved',repo:'Kuechenzettel'});</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -25,6 +27,7 @@
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="icon" href="./icons/icon-192.png">
 <link rel="apple-touch-icon" href="./icons/icon-192.png">
+<link rel="stylesheet" href="./assets/sbkim.css?v=3">
 <style>
   :root{
     --bg:#eef1f4; --paper:#ffffff; --ink:#1f2933; --ink-2:#556070; --line:#dfe4ea;
@@ -144,6 +147,18 @@
     <span class="pin" id="pin" title="Küchenzettel">📌</span>
     <h1>Küchenzettel</h1><span class="tag">REZEPT-NOTIZEN</span>
     <span class="sp"></span>
+    <div class="netzleiste" id="netzleiste" data-offen="0">
+     <button class="lampen" id="lampen" type="button" aria-expanded="false" aria-controls="netz-mehr" title="SBKIM-Knoten: lebt · verkehr · fremd — tippen zeigt Siegel und Netz">
+      <span class="lamp" id="lamp-alive" title="lebt — eigene Identität geladen"><span class="lamp-t">lebt</span></span>
+      <span class="lamp" id="lamp-traffic" title="verkehr — grün, solange am Relais gelauscht wird"><span class="lamp-t">verkehr</span></span>
+      <span class="lamp" id="lamp-fremd" title="fremd — rot nur bei echtem Fremdzugriff"><span class="lamp-t">fremd</span></span>
+     </button>
+     <span class="netz-mehr" id="netz-mehr">
+      <span class="lampen-legende" aria-hidden="true"><span class="lamp" data-lampe-kopie="lamp-alive">lebt</span><span class="lamp" data-lampe-kopie="lamp-traffic">verkehr</span><span class="lamp" data-lampe-kopie="lamp-fremd">fremd</span></span>
+      <span class="siegel-platz" id="siegel-platz"></span>
+      <span class="mycel-platz" data-sbkim-mycel-platz></span>
+     </span>
+    </div>
     <button id="msgBtn" title="Verschlüsselte Nachrichten">💬</button>
     <button id="camBtn" title="Foto-Notiz">📷</button>
     <button id="favFilter" title="Markierte">☆</button>
@@ -416,5 +431,8 @@ await load(); renderTabs(); renderBoard();
 if("serviceWorker" in navigator){ try{ navigator.serviceWorker.register("./sw.js"); }catch(e){} }
 window.__kz = { CommCore, handleQuick, openPriv, store };
 </script>
+<!-- SBKIM-Knoten: 05b ist ein ES-Modul und steht NICHT in der Nachlade-Kette (holt noble-secp256k1.js selbst). -->
+<script type="module" src="./modules/05b_nostr_relay.js?v=3"></script>
+<script src="./assets/sbkim-init.js?v=3"></script>
 </body>
 </html>
