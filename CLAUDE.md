@@ -1,12 +1,17 @@
 # Küchenzettel — Sitzungs-Anker
 
-Installierbare PWA (`index.html`, kein Build-Schritt). **Kein SBKIM-Knoten** — dieses
-Repo bindet keine SBKIM-Module ein.
+Installierbare PWA (`index.html`, kein Build-Schritt). **SBKIM-Knoten seit 2026-10-15**
+(Klaus: andocken; Sage Sammel-Brief Schritt 4b): Schublade `kuechenzettel`, 13 Module
+byte-1:1 aus Sage in `modules/`, Klebstoff `assets/sbkim-init.js`, Identität
+`assets/siegel-inhalt.js`, feste Lampen-Leiste in der Kopfzeile (kein Modul 17).
+Der Nachrichten-Teil (`comm-core/`) ist davon getrennt und bleibt unberührt.
 
 ## Prüfen
 
 ```bash
-npm test    # tools/drift-guard.mjs + tests/comm-core.test.mjs
+npm test                 # tools/drift-guard.mjs + tests/comm-core.test.mjs
+npm run test:browser     # Hülle + Knoten im echten Browser (playwright-core)
+npm run gegenprobe       # nimmt jede Knoten-Zusicherung einzeln weg
 ```
 
 ## Was hier leicht kaputtgeht
@@ -17,6 +22,13 @@ npm test    # tools/drift-guard.mjs + tests/comm-core.test.mjs
 - **Cache-Bump:** `CACHE_VERSION` in `sw.js` (`kuechenzettel-vN`) erhöhen, wenn eine
   Datei aus dem Vorrat sich ändert. Sonst liefert der Service-Worker die alte Fassung.
 - Icons werden von `tools/gen-icons.mjs` erzeugt, nicht von Hand.
+- **SBKIM-Module** in `modules/` sind Kanon aus Sage — nie hier ändern; nachgezogen wird
+  mit Sages `tools/kanon-verteilen.mjs`, der auch die Pins in `tests/knoten.test.mjs` hebt.
+  `modules/noble-secp256k1.js` ist dieselbe Datei wie `comm-core/vendor/…` (sha
+  `8f3879ca`); 05b holt sie per relativem Import neben sich.
+- **`window.SBKIM_DB_SUFFIX` steht im `<head>`** vor jedem Skript; nie ändern.
+- Am Handy ist die Kopfleiste knapp: unter 640 px weicht der Untertitel, unter 380 px die
+  Nadel (`assets/sbkim.css`, gemessen bei 320/360/412 px).
 
 ## Netzweit
 

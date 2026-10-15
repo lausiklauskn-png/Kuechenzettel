@@ -1,0 +1,53 @@
+/* ── SBKIM-Knoten: Lampen, Siegel, Mycel-Blase in der Kopfzeile ─────────────
+   Bauart Sende-Prüfer / Workflow-Needs / In-and-Out-Book, KEIN Modul 17
+   (Sammel-Brief 2026-10-15, Schritt 4b). Farben passend zur grünen Kopfzeile. */
+.netzleiste{position:relative;display:flex;align-items:center;gap:6px;flex:none}
+.hd .lampen{width:auto;height:34px;display:flex;align-items:center;gap:8px;padding:0 10px;border:1px solid rgba(255,255,255,.35);
+  border-radius:999px;background:rgba(255,255,255,.15);color:#e6f4f2;font:inherit;font-size:.72rem;cursor:pointer}
+.lamp{display:inline-flex;align-items:center;gap:4px}
+.lamp::before{content:"";width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.35)}
+.lamp.on::before{background:#2fbf71;box-shadow:0 0 7px #2fbf71}
+.lamp.warn::before{background:#e8b33a;box-shadow:0 0 7px #e8b33a}
+.lamp.bad::before{background:#e5484d;box-shadow:0 0 7px #e5484d}
+.lamp.puls::before{animation:lampenpuls .9s ease-out}
+@keyframes lampenpuls{0%{transform:scale(1.8)}100%{transform:scale(1)}}
+@media (prefers-reduced-motion:reduce){.lamp.puls::before{animation:none}}
+.netz-mehr{display:flex;align-items:center;gap:6px}
+.siegel-platz{display:inline-flex;align-items:center;min-width:34px;min-height:34px}
+.siegel-platz:empty{min-width:0}
+.mycel-platz{display:inline-flex;align-items:center}
+.lampen-legende{display:none}
+/* Modul 16 liefert das Wappen als SVG ohne Maße — im Flex-Kasten wäre es 0 px breit. */
+#sbkim-siegel-badge{width:28px;height:28px;flex:none;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;border-radius:50%}
+#sbkim-siegel-badge svg{width:100%;height:100%;display:block}
+@media (max-width:1100px){
+ .lamp-t{display:none}
+ .hd .lampen{gap:5px;padding:0 9px}
+ .netz-mehr{display:none;position:absolute;top:calc(100% + 8px);right:0;z-index:40;padding:8px 10px;gap:10px;background:var(--paper);
+   color:var(--ink);border:1px solid var(--line);border-radius:12px;box-shadow:0 10px 26px rgb(0 0 0/.25)}
+ .netzleiste[data-offen="1"] .netz-mehr{display:flex}
+ .netzleiste[data-offen="1"] .lampen{border-color:#fff}
+ .lampen-legende{display:flex;flex-direction:column;gap:4px;font-size:.78rem;color:var(--ink);white-space:nowrap}
+ .lampen-legende .lamp::before{background:#c9d2db}
+}
+@media (max-width:640px){
+ .hd .lampen{padding:0 7px;gap:4px;height:32px}
+ /* Das Klappfeld richtet sich am Handy an der Kopfleiste aus, nicht an den Lampen —
+    sonst ragt es bei 320–360 px links aus dem Schirm (Workflow-Needs, gemessen −52 px). */
+ .hd{position:relative}
+ .netzleiste{position:static}
+ .netz-mehr{right:12px;top:calc(100% + 6px)}
+ .lamp::before{width:8px;height:8px}
+}
+/* Schmale Schirme: schon OHNE Knoten ragte der letzte Kopfknopf bei 360 px um 33 px
+   hinaus (gemessen 2026-10-15 an origin/main: rechte Kante 393). Mit den Lampen
+   wären es 91 px. Der Untertitel weicht, die Knöpfe werden etwas kleiner, unter
+   380 px auch die Nadel. */
+@media (max-width:640px){
+ header .hd{gap:6px;padding:12px 10px}
+ header .hd .tag{display:none}
+ header .hd h1{font-size:1.05rem}
+ header .hd button{width:34px;height:34px;font-size:16px}
+}
+@media (max-width:380px){ header .hd .pin{display:none} }
+@media print{.netzleiste,#sbkim-siegel-badge,[data-sbkim-mycel-platz],[id^="sbkim-"]{display:none!important}}
