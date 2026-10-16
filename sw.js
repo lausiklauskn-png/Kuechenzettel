@@ -5,7 +5,7 @@
  * CACHE_VERSION erhöhen. WebSocket-Relais-Verkehr geht am SW vorbei (er
  * fängt nur GET-Navigations-/Asset-Requests ab).
  */
-const CACHE_VERSION = "kuechenzettel-v8";
+const CACHE_VERSION = "kuechenzettel-v9";
 const SHELL = [
   "./",
   "./index.html",
@@ -20,10 +20,10 @@ const SHELL = [
   "./comm-core/vendor/20_schluessel_safe.js",
   "./comm-core/vendor/21_spracheingabe.js",
   /* SBKIM-Knoten (Sage PFLICHT_MODULE, Falle 4): alles im Vorrat. noble ohne ?v= — 05b holt es per import ohne Zusatz. */
-  "./assets/sbkim.css?v=8", "./assets/sbkim-init.js?v=8", "./assets/siegel-inhalt.js?v=8", "./modules/noble-secp256k1.js",
-  "./modules/01_storage.js?v=8", "./modules/02_spore.js?v=8", "./modules/03_embedding.js?v=8", "./modules/04_match.js?v=8",
-  "./modules/05_anastomose.js?v=8", "./modules/05b_nostr_relay.js?v=8", "./modules/07_apoptose.js?v=8", "./modules/15_membran.js?v=8",
-  "./modules/16_siegel.js?v=8", "./modules/16b_andock_wizard.js?v=8", "./modules/23_rendezvous.js?v=8", "./modules/23_rendezvous_ui.js?v=8",
+  "./assets/sbkim.css?v=9", "./assets/sbkim-init.js?v=9", "./assets/siegel-inhalt.js?v=9", "./modules/noble-secp256k1.js",
+  "./modules/01_storage.js?v=9", "./modules/02_spore.js?v=9", "./modules/03_embedding.js?v=9", "./modules/04_match.js?v=9",
+  "./modules/05_anastomose.js?v=9", "./modules/05b_nostr_relay.js?v=9", "./modules/07_apoptose.js?v=9", "./modules/15_membran.js?v=9",
+  "./modules/16_siegel.js?v=9", "./modules/16b_andock_wizard.js?v=9", "./modules/23_rendezvous.js?v=9", "./modules/23_rendezvous_ui.js?v=9",
   "./sicherheit.html",
 ];
 
