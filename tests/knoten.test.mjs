@@ -36,10 +36,10 @@ const KNOTEN_PINS = {
   "modules/05b_nostr_relay.js": "37eee5b196b3efad57131edd1cc3c0ee23acb97b5ca40740d6a0771db4b4a421",
   "modules/07_apoptose.js": "0acdd6ab2d95e131fa6953061cc0e95a2396e05fff091a7dc690b2668a4c035a",
   "modules/15_membran.js": "829a5bc01976b59c5ce428125314b87b314b6212cd5a473634c2d22c02579397",
-  "modules/16_siegel.js": "b4ea4446b18eaeee7e3230520dcf719e225b0c0ad478f40b7dee19ee68b77427",
+  "modules/16_siegel.js": "0783763331b17df2288e5eec885a38464ff630e76639194a52592c4dde1c3f9c",
   "modules/16b_andock_wizard.js": "c415eafdb1b660a5256e19957c667074b64b0c3990cc8acc4daeeef34a57e85d",
-  "modules/23_rendezvous.js": "6a5fc0e524df863432095dfdb73b73959a078ad4f4666ffa5f28612dd0a18fc1",
-  "modules/23_rendezvous_ui.js": "fb0bf74f5ee1cd1a38e6ea949431c2fc15ebde2c0339cf2df5ade48ed7691d6c",
+  "modules/23_rendezvous.js": "87278a0c6e0f371bf6cf812f82079c399c3e332c8ce187158edb4afddac8d7ef",
+  "modules/23_rendezvous_ui.js": "5ff4befaa644ed2f1d7fe8db4f97a18c53ff0606ca737ec615fb99472537a620",
   "modules/noble-secp256k1.js": "8f3879ca422c4fdfe7ca0361688636fa7cc550a59bd94d512ed6ec79aa3d55d1"
 };
 
