@@ -15,6 +15,7 @@
 <!-- Schublade des SBKIM-Knotens: steht VOR jedem Skript, weil Modul 01 den Wert beim Laden liest. Nie ändern. -->
 <script>window.SBKIM_DB_SUFFIX = "kuechenzettel";</script>
 <script>/* FP-COPYRIGHT */window._CR=Object.freeze({c:'\u00a9 2026 Klaus Nitzsche',m:'info@family-projekt.de',r:'All rights reserved',repo:'Kuechenzettel'});</script>
+<script src="assets/installieren.js?v=1" data-name="Küchenzettel" data-vor="msgBtn" defer></script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Küchenzettel — Rezept-Notizen</title>
@@ -51,6 +52,10 @@
   .hd .sp{flex:1}
   .hd button{width:38px;height:38px;border-radius:9px;background:rgba(255,255,255,.15);display:grid;place-items:center;font-size:18px;transition:.15s}
   .hd button:active{transform:scale(.9)}
+  /* Installieren-Knopf (assets/installieren.js): quadratisch wie die Nachbarn, nur das Zeichen ⬇ */
+  .hd #installieren .t{display:none}
+  /* Mit dem vierten Knopf ist die Leiste unter 340 px zu knapp — dort etwas kleinere Knöpfe */
+  @media (max-width:340px){header .hd{gap:4px}header .hd > button{width:29px;height:32px;font-size:15px}}
 
   /* quick bar (Notiz/Suche) */
   .quick{display:flex;gap:8px;margin:16px 0 4px}

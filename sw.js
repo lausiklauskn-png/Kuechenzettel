@@ -5,7 +5,7 @@
  * CACHE_VERSION erhöhen. WebSocket-Relais-Verkehr geht am SW vorbei (er
  * fängt nur GET-Navigations-/Asset-Requests ab).
  */
-const CACHE_VERSION = "kuechenzettel-v10";
+const CACHE_VERSION = "kuechenzettel-v11";
 const SHELL = [
   "./",
   "./index.html",
@@ -25,6 +25,7 @@ const SHELL = [
   "./modules/05_anastomose.js?v=10", "./modules/05b_nostr_relay.js?v=10", "./modules/07_apoptose.js?v=10", "./modules/15_membran.js?v=10",
   "./modules/16_siegel.js?v=10", "./modules/16b_andock_wizard.js?v=10", "./modules/23_rendezvous.js?v=10", "./modules/23_rendezvous_ui.js?v=10",
   "./sicherheit.html",
+  "./assets/installieren.js?v=1",
 ];
 
 self.addEventListener("install", e => {

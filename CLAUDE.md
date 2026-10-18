@@ -30,6 +30,16 @@ npm run gegenprobe       # nimmt jede Knoten-Zusicherung einzeln weg
 - Am Handy ist die Kopfleiste knapp: unter 640 px weicht der Untertitel, unter 380 px die
   Nadel (`assets/sbkim.css`, gemessen bei 320/360/412 px).
 
+## ⬇ Installieren-Knopf (2026-10-18)
+
+Klaus: *„Den Installieren-Button überall fest einbauen … Wenn es kein Einstellungsfeld gibt, dann oben ins Menü."*
+Küchenzettel hat keine Einstellungen, deshalb steht ⬇ in der Kopfleiste vor 💬 (`data-vor="msgBtn"`, nur das Zeichen).
+`assets/installieren.js` ist byte-1:1 aus Sage-Protokol (SHA-256 `e0644084…c3c3`) — dort pflegen, hier neu kopieren.
+Als installierte App verschwindet er. Unter 340 px werden die Kopf-Knöpfe 29 px breit und der Abstand 4 px, sonst
+reicht die Zeile nicht (gemessen 320/360/412 px). Im Vorrat (`?v=1`), Cache `kuechenzettel-v11`.
+⚠ Benannt, nicht angefasst: drei Fälle in `tests/gegenprobe_knoten.mjs` (K8, K11, K13) zielen noch auf `?v=3`/`v3` und
+sind damit tote Anker. ⚠ Am Tablet/Handy nicht gemessen.
+
 ## Netzweit
 
 Freibrief zum Selbst-Mergen · Gerätename · frisch von `origin/main` vor jeder Arbeit ·
